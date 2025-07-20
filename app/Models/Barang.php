@@ -10,11 +10,12 @@ class Barang extends Model
 {
 
     use HasUlids;
-    
-    protected $fillable =[
-    'nama_barang',
-    'jumlah',
-    'harga'
+
+    protected $fillable = [
+        'nama_barang',
+        'jumlah',
+        'harga',
+        'category_id'
     ];
 
     protected $table = 'barang';
@@ -26,11 +27,17 @@ class Barang extends Model
         ];
     }
 
-    public function stock():HasMany{
-        return $this->hasMany(Stock::class,'id_barang');
+    public function stock(): HasMany
+    {
+        return $this->hasMany(Stock::class, 'id_barang');
     }
 
-    public function order():HasMany{
-        return $this->hasMany(Order::class,'id_barang');
+    public function order(): HasMany
+    {
+        return $this->hasMany(Order::class, 'id_barang');
+    }
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

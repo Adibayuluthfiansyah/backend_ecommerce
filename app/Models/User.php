@@ -23,8 +23,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
         'username',
+        'email',
         'password',
     ];
 
@@ -46,15 +46,15 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'name'=>'string',
-            'username'=>'string',
+            'name' => 'string',
+            'username' => 'string',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
     public function setUsernameAttribute($value)
-{
-    $this->attributes['username'] = strtolower($value);
-}
+    {
+        $this->attributes['username'] = strtolower($value);
+    }
 }

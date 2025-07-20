@@ -11,6 +11,7 @@ use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UserController;
 use App\Models\OrderDetails;
+use App\Http\Controllers\CategoryController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -32,9 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('stock', StockController::class);
     Route::apiResource('order', OrderController::class);
     Route::apiResource('orderDetail', OrderDetailsController::class);
+    Route::apiResource('categories', CategoryController::class);
     // Route::post('/orderDetail/{id_order}/details', [OrderDetailsController::class, 'store']);
     Route::post('/orderDetail/{orderId}', [OrderDetailsController::class, 'store']);
     Route::patch('/barang/{id}/kurangi-stok', [BarangController::class, 'kurangiStok']);
+    Route::get('categories-active', [CategoryController::class, 'getActiveCategories']);
     Route::patch('/order/{id}/updateTotal', [OrderController::class, 'updateTotal']);
     Route::get('/orderDetail/{orderId}', [OrderDetailsController::class, 'getDetailsByOrderId']);
     Route::get('/orderDetail/{order_id}', [OrderDetailsController::class, 'show']);
