@@ -28,32 +28,45 @@ class CategoryController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            $request->validate([
+                'nama' => 'required|string|max:255|unique:categories,name', // Ubah dari 'name' ke 'nama'
+                'description' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'is_active' => 'boolean'
+            ]);
 
-        $category = new Category();
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->description = $request->description;
-        $category->is_active = $request->is_active ?? true;
+            $category = new Category();
+            $category->name = $request->nama; // Ubah dari 'name' ke 'nama'
+            $category->slug = Str::slug($request->nama); // Ubah dari 'name' ke 'nama'
+            $category->description = $request->description;
+            $category->is_active = $request->has('is_active') ? (bool)$request->is_active : true;
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('categories', 'public');
-            $category->image = $imagePath;
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('categories', 'public');
+                $category->image = $imagePath;
+            }
+
+            $category->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Category created successfully',
+                'data' => $category
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create category: ' . $e->getMessage()
+            ], 500);
         }
-
-        $category->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category created successfully',
-            'data' => $category
-        ], 201);
     }
 
     /**
@@ -72,36 +85,49 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean'
-        ]);
+        try {
+            $request->validate([
+                'nama' => 'required|string|max:255|unique:categories,name,' . $category->id, // Ubah dari 'name' ke 'nama'
+                'description' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'is_active' => 'boolean'
+            ]);
 
-        $category->name = $request->name;
-        $category->slug = Str::slug($request->name);
-        $category->description = $request->description;
-        $category->is_active = $request->is_active ?? $category->is_active;
+            $category->name = $request->nama; // Ubah dari 'name' ke 'nama'
+            $category->slug = Str::slug($request->nama); // Ubah dari 'name' ke 'nama'
+            $category->description = $request->description;
+            $category->is_active = $request->has('is_active') ? (bool)$request->is_active : $category->is_active;
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete old image
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                // Delete old image
+                if ($category->image) {
+                    Storage::disk('public')->delete($category->image);
+                }
+
+                $imagePath = $request->file('image')->store('categories', 'public');
+                $category->image = $imagePath;
             }
 
-            $imagePath = $request->file('image')->store('categories', 'public');
-            $category->image = $imagePath;
+            $category->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Category updated successfully',
+                'data' => $category
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update category: ' . $e->getMessage()
+            ], 500);
         }
-
-        $category->save();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category updated successfully',
-            'data' => $category
-        ]);
     }
 
     /**
@@ -109,17 +135,24 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
-        // Delete image if exists
-        if ($category->image) {
-            Storage::disk('public')->delete($category->image);
+        try {
+            // Delete image if exists
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+
+            $category->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Category deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete category: ' . $e->getMessage()
+            ], 500);
         }
-
-        $category->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category deleted successfully'
-        ]);
     }
 
     /**
